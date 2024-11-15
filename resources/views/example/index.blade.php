@@ -32,17 +32,19 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Description</th>
+                            <th>Price</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="examplesTable">
-                        <!-- AJAX-loaded content -->
+                        <!-- Table rows will be loaded dynamically -->
                     </tbody>
                 </table>
                 <div id="paginationLinks">
-                    <!-- Pagination links will be dynamically loaded -->
+                    <!-- Pagination links will be loaded dynamically -->
                 </div>
             </div>
+
 
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -81,24 +83,10 @@
 </div>
 <x-footer />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
 <script>
     $(document).ready(function() {
         // Load examples
-        function loadExamples(query = '', page = 1) {
-            $.ajax({
-                url: '{{ route("example.index") }}',
-                type: 'GET',
-                data: {
-                    query,
-                    page
-                },
-                success: function(data) {
-                    $('#examplesTable').html(data.tableData);
-                    $('#paginationLinks').html(data.pagination);
-                }
-            });
-        }
 
         loadExamples();
 
@@ -124,11 +112,20 @@
                 type: 'POST',
                 data: formData,
                 success: function(response) {
-                    $('#exampleModal').modal('hide');
+                    $('#exampleModal').modal('hide'); // Hide modal
+                    $('.modal-backdrop').remove(); // Ensure backdrop is removed
+                    $('body').removeClass('modal-open'); // Ensure body is scrollable again
+
+                    // Show success notification
+                    toastr.success('Example saved successfully!', 'Success');
+                    // Reload the table
                     loadExamples();
+
+                    // Reset the form
+                    $('#exampleForm')[0].reset();
                 },
                 error: function(response) {
-                    alert('Failed to save the example.');
+                    toastr.error('Failed to save the example.', 'Error'); // Pop-up notification
                 }
             });
         });
@@ -161,21 +158,65 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function() {
+                        toastr.success('Example deleted successfully!', 'Deleted'); // Pop-up notification
                         loadExamples();
                     },
                     error: function() {
-                        alert('Failed to delete the example.');
+                        toastr.error('Failed to delete the example.', 'Error'); // Pop-up notification
                     }
                 });
             }
         });
 
-        // Pagination
-        $(document).on('click', '.pagination a', function(e) {
-            e.preventDefault();
-            const page = $(this).attr('href').split('page=')[1];
+        // Load Examples Function
+        function loadExamples(query = '', page = 1) {
+            $.ajax({
+                url: '{{ route("example.table") }}',
+                type: 'GET',
+                data: {
+                    query: query,
+                    page: page,
+                },
+                dataType: 'json', // Ensure the response is interpreted as JSON
+                success: function(data) {
+                    if (data.tableData && data.pagination) {
+                        // Inject HTML content into the table and pagination links
+                        $('#examplesTable').html(data.tableData);
+                        $('#paginationLinks').html(data.pagination);
+                    } else {
+                        console.error('Unexpected response structure:', data);
+                        alert('Failed to load examples correctly.');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error loading examples:', xhr.responseText);
+                    alert('Failed to load examples.');
+                }
+            });
+        }
+
+
+
+        // Search functionality
+        $('#searchBox').on('input', function() {
+            const query = $(this).val();
+            loadExamples(query); // Call loadExamples with the search query
+        });
+
+        // Pagination link handling
+        $(document).on('click', '#paginationLinks a', function(e) {
+            e.preventDefault(); // Prevent default link behavior
+            const page = $(this).attr('href').split('page=')[1]; // Extract page number from the link
             const query = $('#searchBox').val();
             loadExamples(query, page);
         });
+
+        // Initial Load
+        $(document).ready(function() {
+            loadExamples(); // Load examples on page load
+        });
+
+
+
     });
 </script>

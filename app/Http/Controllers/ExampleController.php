@@ -14,18 +14,33 @@ class ExampleController extends Controller
     {
         $query = $request->get('query', '');
         $examples = Example::where('name', 'like', "%$query%")
-            ->orWhere('description', 'like', "%$query%")
+            ->orderBy('id', 'desc')
             ->paginate(5);
 
         if ($request->ajax()) {
             return response()->json([
                 'tableData' => view('example.partials.table', compact('examples'))->render(),
-                'pagination' => (string)$examples->links(),
+                'pagination' => (string) $examples->links(),
             ]);
         }
 
         return view('example.index', compact('examples'));
     }
+
+    public function table(Request $request)
+    {
+        $query = $request->get('query', '');
+        $examples = Example::where('name', 'like', "%$query%")
+            ->orderBy('id', 'desc')
+            ->paginate(5);
+
+        return response()->json([
+            'tableData' => view('example.partials.table', compact('examples'))->render(),
+            'pagination' => (string) $examples->links(),
+        ]);
+    }
+
+
 
     /**
      * Show the form for creating a new resource.

@@ -22,5 +22,6 @@ require __DIR__ . '/auth.php';
 
 // Route::get('/example', [ExampleController::class, 'index']);
 // Route::post('/example/save', [ExampleController::class, 'save'])->name('example.save');
-
+Route::get('/example', [ExampleController::class, 'index'])->name('example.index');
 Route::resource('example', ExampleController::class);
+Route::get('/examples/table', [ExampleController::class, 'table'])->name('example.table');
