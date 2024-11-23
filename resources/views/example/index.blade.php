@@ -131,21 +131,32 @@
         });
 
         // Edit Example
+        // Edit Example
         $(document).on('click', '.editExampleBtn', function() {
             const id = $(this).data('id');
             $.ajax({
                 url: `{{ url('example') }}/${id}/edit`,
                 type: 'GET',
                 success: function(data) {
-                    $('#exampleModalLabel').text('Edit Example');
-                    $('#exampleId').val(data.id);
-                    $('#inputName').val(data.name);
-                    $('#inputDescription').val(data.description);
-                    $('#inputPrice').val(data.price);
-                    $('#exampleModal').modal('show');
+                    if (data) {
+                        $('#exampleModalLabel').text('Edit Example');
+                        $('#exampleId').val(data.id);
+                        $('#inputName').val(data.name);
+                        $('#inputDescription').val(data.description);
+                        $('#inputPrice').val(data.price);
+                        $('#exampleModal').modal('show');
+                    } else {
+                        console.error("Unexpected response structure:", data);
+                        alert('Failed to load example data. Please try again.');
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Error loading data:", xhr.responseText);
+                    alert('Failed to load example data. Check console for details.');
                 }
             });
         });
+
 
         // Delete Example
         $(document).on('click', '.deleteExampleBtn', function() {

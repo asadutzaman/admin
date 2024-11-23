@@ -77,9 +77,14 @@ class ExampleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Example $example)
+    public function edit($id)
     {
-        //
+        $example = Example::find($id);
+        if ($example) {
+            return response()->json($example);
+        } else {
+            return response()->json(['error' => 'Example not found'], 404);
+        }
     }
 
     /**
